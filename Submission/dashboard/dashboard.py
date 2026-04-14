@@ -9,15 +9,23 @@ st.set_page_config(page_title="Bike Sharing Dashboard", layout="wide")
 
 st.title("🚲 Bike Sharing Dashboard")
 
-# Cek file dengan os.listdir()
-st.write("📁 File yang ada di folder ini:")
-files = os.listdir(".")
-st.write(files)
+# Path ke main_data.csv (ada di dalam folder Submission/dashboard/)
+file_path = "Submission/dashboard/main_data.csv"
 
-# Coba baca file
-try:
-    df = pd.read_csv("main_data.csv")
-    st.success("✅ main_data.csv berhasil dibaca!")
+# Cek apakah file ada
+if os.path.exists(file_path):
+    st.success(f"✅ File ditemukan di: {file_path}")
+    df = pd.read_csv(file_path)
     st.write(df.head())
-except Exception as e:
-    st.error(f"❌ Gagal membaca main_data.csv: {e}")
+else:
+    st.error(f"❌ File tidak ditemukan di: {file_path}")
+    st.write("📁 Mencoba mencari di semua folder...")
+    
+    # Cari file main_data.csv di semua folder
+    for root, dirs, files in os.walk("."):
+        for file in files:
+            if file == "main_data.csv":
+                st.success(f"✅ Ditemukan di: {os.path.join(root, file)}")
+                df = pd.read_csv(os.path.join(root, file))
+                st.write(df.head())
+                break
