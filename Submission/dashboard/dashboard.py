@@ -1,17 +1,22 @@
+# ============================================
 # DASHBOARD BIKE SHARING
+# ============================================
+
+import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import streamlit as st
+import numpy as np
 
 # Setting style
 sns.set(style='dark')
 
-# LOAD DATA
-st.set_page_config(page_title="Bike Sharing Dashboard", layout="wide")
-
+# ============================================
+# LOAD DATA (dengan path yang benar)
+# ============================================
 @st.cache_data
 def load_data():
+    # Path ke file main_data.csv (satu folder dengan dashboard.py)
     df = pd.read_csv("main_data.csv")
     df['dteday'] = pd.to_datetime(df['dteday'])
     return df
@@ -22,7 +27,9 @@ df = load_data()
 hour_df = df[df['data_type'] == 'hourly'].copy()
 day_df = df[df['data_type'] == 'daily'].copy()
 
+# ============================================
 # SIDEBAR FILTER
+# ============================================
 min_date = day_df["dteday"].min()
 max_date = day_df["dteday"].max()
 
@@ -30,7 +37,6 @@ with st.sidebar:
     st.title("Bike Sharing")
     st.markdown("---")
     
-    # Date filter
     start_date, end_date = st.date_input(
         label='Rentang Waktu',
         min_value=min_date,
@@ -52,12 +58,16 @@ filtered_hour = hour_df[
     (hour_df["dteday"] <= pd.Timestamp(end_date))
 ]
 
+# ============================================
 # HEADER
-st.title("Bike Sharing Dashboard")
+# ============================================
+st.title("🚲 Bike Sharing Dashboard")
 st.markdown(f"**Data periode:** {start_date} sampai {end_date}")
 st.markdown("---")
 
-# METRICS (4 kotak)
+# ============================================
+# METRICS
+# ============================================
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
@@ -78,7 +88,9 @@ with col4:
 
 st.markdown("---")
 
+# ============================================
 # CHART 1: TREN HARIAN
+# ============================================
 st.subheader("Tren Penyewaan Harian")
 
 fig, ax = plt.subplots(figsize=(12, 5))
@@ -92,7 +104,9 @@ st.pyplot(fig)
 
 st.markdown("---")
 
-# CHART 2: POLA PER JAM (Casual vs Registered)
+# ============================================
+# CHART 2: POLA PER JAM
+# ============================================
 st.subheader("Pola Penyewaan per Jam")
 
 hourly_pattern = filtered_hour.groupby(by="hr", observed=True).agg({
@@ -114,7 +128,9 @@ st.pyplot(fig)
 
 st.markdown("---")
 
+# ============================================
 # CHART 3: PENGARUH CUACA
+# ============================================
 st.subheader("Pengaruh Cuaca terhadap Penyewaan")
 
 weather_map = {1: 'Cerah', 2: 'Kabut', 3: 'Hujan Ringan', 4: 'Hujan Deras'}
@@ -129,7 +145,9 @@ st.pyplot(fig)
 
 st.markdown("---")
 
+# ============================================
 # CHART 4: 5 JAM TERSIBUK
+# ============================================
 st.subheader("5 Jam dengan Penyewaan Tertinggi")
 
 top_hours = filtered_hour.groupby(by="hr", observed=True).agg({
@@ -174,6 +192,7 @@ for bar in bars:
 st.pyplot(fig)
 
 st.markdown("---")
+
 
 # CHART 6: PERBANDINGAN 2011 vs 2012
 st.subheader("Perbandingan 2011 vs 2012")
