@@ -2,32 +2,61 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 st.set_page_config(page_title="Bike Sharing Dashboard", layout="wide")
 
 # ============================================
-# LOAD DATA
+# DEBUG: LIHAT DAFTAR FILE
+# ============================================
+st.write("### Debug: Cek File di Server")
+
+# Tampilkan current working directory
+st.write(f"Current directory: {os.getcwd()}")
+
+# Tampilkan semua file di folder saat ini
+st.write("Files in current directory:")
+st.write(os.listdir('.'))
+
+# Cek apakah main_data.csv ada
+if os.path.exists("main_data.csv"):
+    st.success("main_data.csv DITEMUKAN!")
+else:
+    st.error("main_data.csv TIDAK DITEMUKAN!")
+
+# Cek apakah ada folder data
+if os.path.exists("data"):
+    st.write("Files in data folder:")
+    st.write(os.listdir('data'))
+
+st.markdown("---")
+
+# ============================================
+# LOAD DATA (Coba beberapa path)
 # ============================================
 @st.cache_data
 def load_data():
-    df = pd.read_csv("main_data.csv")
-    df['dteday'] = pd.to_datetime(df['dteday'])
-    return df
+    # Coba berbagai kemungkinan path
+    paths_to_try = ["main_data.csv", "../main_data.csv", "data/main_data.csv", "../data/main_data.csv"]
+    
+    for path in paths_to_try:
+        if os.path.exists(path):
+            st.success(f"Loading data from: {path}")
+            df = pd.read_csv(path)
+            df['dteday'] = pd.to_datetime(df['dteday'])
+            return df
+    
+    st.error("Tidak能找到 file main_data.csv di semua lokasi!")
+    st.stop()
 
-# Load data
 df = load_data()
 
-# Pisahkan data berdasarkan data_type
+# Pisahkan data
 hour_df = df[df['data_type'] == 'hourly'].copy()
 day_df = df[df['data_type'] == 'daily'].copy()
 
-# ============================================
-# DEBUG (Cek data sudah terload)
-# ============================================
-st.write("Data berhasil dimuat!")
-st.write(f"Jumlah data hourly: {len(hour_df)} baris")
-st.write(f"Jumlah data daily: {len(day_df)} baris")
-st.write("---")
+st.write(f"Data berhasil dimuat! Hourly: {len(hour_df)}, Daily: {len(day_df)}")
+st.markdown("---")
 
 # ============================================
 # SIDEBAR FILTER
@@ -223,32 +252,6 @@ for bar in bars:
     height = bar.get_height()
     ax.annotate(f'{height:.0f}', xy=(bar.get_x() + bar.get_width()/2, height),
                 xytext=(0, 3), textcoords="offset points", ha='center', va='bottom')
-st.pyplot(fig)
-
-st.markdown("---")
-
-# ============================================
-# CHART 7: ANALISIS MUSIMAN
-# ============================================
-st.subheader("Analisis Penyewaan per Musim")
-
-season_map = {1: 'Semi', 2: 'Panas', 3: 'Gugur', 4: 'Dingin'}
-filtered_day = filtered_day.copy()
-filtered_day['season_name'] = filtered_day['season'].map(season_map)
-
-season_rental = filtered_day.groupby('season_name', observed=True)['cnt'].mean().sort_values(ascending=False)
-
-fig, ax = plt.subplots(figsize=(10, 6))
-bars = ax.bar(season_rental.index, season_rental.values, color="#2E86AB", edgecolor='black')
-
-for bar in bars:
-    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 100, 
-            f'{int(bar.get_height())}', ha='center', va='bottom', fontsize=11, fontweight='bold')
-
-ax.set_title("Rata-rata Penyewaan per Musim")
-ax.set_xlabel("Musim")
-ax.set_ylabel("Rata-rata Penyewaan per Hari")
-ax.grid(axis='y', linestyle='--', alpha=0.5)
 st.pyplot(fig)
 
 st.markdown("---")
