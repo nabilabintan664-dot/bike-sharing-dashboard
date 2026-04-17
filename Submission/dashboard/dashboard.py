@@ -1,23 +1,12 @@
-# ============================================
-# DASHBOARD BIKE SHARING
-# ============================================
-
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import numpy as np
 
-# Setting style
-sns.set(style='dark')
-
-# DEBUG: Cek apakah data terload dengan benar
-st.write("Jumlah data hourly:", len(hour_df))
-st.write("Jumlah data daily:", len(day_df))
-st.write("Kolom yang tersedia:", list(df.columns))
+st.set_page_config(page_title="Bike Sharing Dashboard", layout="wide")
 
 # ============================================
-# LOAD DATA (PERBAIKAN PATH)
+# LOAD DATA
 # ============================================
 @st.cache_data
 def load_data():
@@ -25,11 +14,20 @@ def load_data():
     df['dteday'] = pd.to_datetime(df['dteday'])
     return df
 
+# Load data
 df = load_data()
 
-# Pisahkan data hourly dan daily
+# Pisahkan data berdasarkan data_type
 hour_df = df[df['data_type'] == 'hourly'].copy()
 day_df = df[df['data_type'] == 'daily'].copy()
+
+# ============================================
+# DEBUG (Cek data sudah terload)
+# ============================================
+st.write("Data berhasil dimuat!")
+st.write(f"Jumlah data hourly: {len(hour_df)} baris")
+st.write(f"Jumlah data daily: {len(day_df)} baris")
+st.write("---")
 
 # ============================================
 # SIDEBAR FILTER
@@ -133,7 +131,7 @@ st.pyplot(fig)
 st.markdown("---")
 
 # ============================================
-# CHART 3: PENGARUH CUACA (BAR CHART)
+# CHART 3: PENGARUH CUACA
 # ============================================
 st.subheader("Pengaruh Cuaca terhadap Penyewaan")
 
@@ -149,9 +147,9 @@ for bar in bars:
     ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 5, 
             f'{int(bar.get_height())}', ha='center', va='bottom', fontsize=11, fontweight='bold')
 
-ax.set_title("Rata-rata Penyewaan Berdasarkan Kondisi Cuaca", fontsize=14, fontweight='bold')
-ax.set_xlabel("Kondisi Cuaca", fontsize=12)
-ax.set_ylabel("Rata-rata Jumlah Penyewaan per Jam", fontsize=12)
+ax.set_title("Rata-rata Penyewaan Berdasarkan Kondisi Cuaca")
+ax.set_xlabel("Kondisi Cuaca")
+ax.set_ylabel("Rata-rata Jumlah Penyewaan per Jam")
 ax.grid(axis='y', linestyle='--', alpha=0.5)
 st.pyplot(fig)
 
@@ -247,15 +245,13 @@ for bar in bars:
     ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 100, 
             f'{int(bar.get_height())}', ha='center', va='bottom', fontsize=11, fontweight='bold')
 
-ax.set_title("Rata-rata Penyewaan per Musim", fontsize=14, fontweight='bold')
-ax.set_xlabel("Musim", fontsize=12)
-ax.set_ylabel("Rata-rata Penyewaan per Hari", fontsize=12)
+ax.set_title("Rata-rata Penyewaan per Musim")
+ax.set_xlabel("Musim")
+ax.set_ylabel("Rata-rata Penyewaan per Hari")
 ax.grid(axis='y', linestyle='--', alpha=0.5)
 st.pyplot(fig)
 
 st.markdown("---")
 
-# ============================================
 # FOOTER
-# ============================================
 st.caption(f"Copyright © 2024 | Bike Sharing Dashboard | Data {start_date} - {end_date}")
