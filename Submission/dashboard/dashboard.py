@@ -16,7 +16,6 @@ sns.set(style='dark')
 # ============================================
 @st.cache_data
 def load_data():
-    # PERBAIKAN: main_data.csv ada di folder yang SAMA
     df = pd.read_csv("main_data.csv")
     df['dteday'] = pd.to_datetime(df['dteday'])
     return df
