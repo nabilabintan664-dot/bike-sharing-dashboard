@@ -11,6 +11,11 @@ import numpy as np
 # Setting style
 sns.set(style='dark')
 
+# DEBUG: Cek apakah data terload dengan benar
+st.write("Jumlah data hourly:", len(hour_df))
+st.write("Jumlah data daily:", len(day_df))
+st.write("Kolom yang tersedia:", list(df.columns))
+
 # ============================================
 # LOAD DATA (PERBAIKAN PATH)
 # ============================================
