@@ -7,19 +7,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-import os
 
 # Setting style
 sns.set(style='dark')
-st.set_page_config(page_title="Bike Sharing Dashboard", layout="wide")
 
 # ============================================
-# LOAD DATA
+# LOAD DATA (PERBAIKAN PATH)
 # ============================================
 @st.cache_data
 def load_data():
-    file_path = "Submission/dashboard/main_data.csv"
-    df = pd.read_csv(file_path)
+    # PERBAIKAN: main_data.csv ada di folder yang SAMA
+    df = pd.read_csv("main_data.csv")
     df['dteday'] = pd.to_datetime(df['dteday'])
     return df
 
@@ -93,7 +91,7 @@ st.markdown("---")
 # ============================================
 # CHART 1: TREN HARIAN
 # ============================================
-st.subheader("📈 Tren Penyewaan Harian")
+st.subheader("Tren Penyewaan Harian")
 
 fig, ax = plt.subplots(figsize=(12, 5))
 ax.plot(filtered_day["dteday"], filtered_day["cnt"], 
@@ -109,7 +107,7 @@ st.markdown("---")
 # ============================================
 # CHART 2: POLA PER JAM
 # ============================================
-st.subheader("⏰ Pola Penyewaan per Jam")
+st.subheader("Pola Penyewaan per Jam")
 
 hourly_pattern = filtered_hour.groupby(by="hr", observed=True).agg({
     "cnt": "mean",
@@ -121,7 +119,7 @@ fig, ax = plt.subplots(figsize=(12, 5))
 ax.plot(hourly_pattern["hr"], hourly_pattern["registered"], 
         marker='o', linewidth=2, label="Registered", color="#2E86AB")
 ax.plot(hourly_pattern["hr"], hourly_pattern["casual"], 
-        marker='s', linewidth=2, label="Casual", color="#A63D40")
+        marker='s', linewidth=2, label="Casual", color="#F18F01")
 ax.set_xlabel("Jam")
 ax.set_ylabel("Rata-rata Jumlah Penyewa")
 ax.legend()
@@ -131,18 +129,26 @@ st.pyplot(fig)
 st.markdown("---")
 
 # ============================================
-# CHART 3: PENGARUH CUACA
+# CHART 3: PENGARUH CUACA (BAR CHART)
 # ============================================
-st.subheader("☁️ Pengaruh Cuaca terhadap Penyewaan")
+st.subheader("Pengaruh Cuaca terhadap Penyewaan")
 
 weather_map = {1: 'Cerah', 2: 'Kabut', 3: 'Hujan Ringan', 4: 'Hujan Deras'}
 filtered_hour['weather_label'] = filtered_hour['weathersit'].map(weather_map)
 
-fig, ax = plt.subplots(figsize=(10, 5))
-sns.boxplot(data=filtered_hour, x='weather_label', y='cnt', ax=ax, palette='Set2')
-ax.set_xlabel("Kondisi Cuaca")
-ax.set_ylabel("Jumlah Penyewaan")
-ax.tick_params(axis='x', rotation=45)
+weather_rental = filtered_hour.groupby('weather_label', observed=True)['cnt'].mean().sort_values(ascending=False)
+
+fig, ax = plt.subplots(figsize=(10, 6))
+bars = ax.bar(weather_rental.index, weather_rental.values, color="#2E86AB", edgecolor='black')
+
+for bar in bars:
+    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 5, 
+            f'{int(bar.get_height())}', ha='center', va='bottom', fontsize=11, fontweight='bold')
+
+ax.set_title("Rata-rata Penyewaan Berdasarkan Kondisi Cuaca", fontsize=14, fontweight='bold')
+ax.set_xlabel("Kondisi Cuaca", fontsize=12)
+ax.set_ylabel("Rata-rata Jumlah Penyewaan per Jam", fontsize=12)
+ax.grid(axis='y', linestyle='--', alpha=0.5)
 st.pyplot(fig)
 
 st.markdown("---")
@@ -150,7 +156,7 @@ st.markdown("---")
 # ============================================
 # CHART 4: 5 JAM TERSIBUK
 # ============================================
-st.subheader("🏆 5 Jam dengan Penyewaan Tertinggi")
+st.subheader("5 Jam dengan Penyewaan Tertinggi")
 
 top_hours = filtered_hour.groupby(by="hr", observed=True).agg({
     "cnt": "mean"
@@ -174,7 +180,7 @@ st.markdown("---")
 # ============================================
 # CHART 5: WEEKDAY vs WEEKEND
 # ============================================
-st.subheader("📅 Weekday vs Weekend")
+st.subheader("Weekday vs Weekend")
 
 filtered_hour['day_type'] = filtered_hour['weekday'].apply(
     lambda x: 'Weekend' if x in [0,6] else 'Weekday'
@@ -184,8 +190,7 @@ day_type_pattern = filtered_hour.groupby(by="day_type", observed=True).agg({
 }).round(2).reset_index()
 
 fig, ax = plt.subplots(figsize=(8, 5))
-colors = ["#2E86AB", "#F18F01"]
-bars = ax.bar(day_type_pattern["day_type"], day_type_pattern["cnt"], color=colors)
+bars = ax.bar(day_type_pattern["day_type"], day_type_pattern["cnt"], color="#2E86AB")
 ax.set_xlabel("Tipe Hari")
 ax.set_ylabel("Rata-rata Jumlah Penyewa")
 
@@ -200,7 +205,7 @@ st.markdown("---")
 # ============================================
 # CHART 6: PERBANDINGAN 2011 vs 2012
 # ============================================
-st.subheader("📊 Perbandingan 2011 vs 2012")
+st.subheader("Perbandingan 2011 vs 2012")
 
 filtered_hour['year'] = filtered_hour['yr'].map({0: '2011', 1: '2012'})
 year_comparison = filtered_hour.groupby(by="year", observed=True).agg({
@@ -208,8 +213,7 @@ year_comparison = filtered_hour.groupby(by="year", observed=True).agg({
 }).round(2).reset_index()
 
 fig, ax = plt.subplots(figsize=(8, 5))
-colors = ["#A63D40", "#2E86AB"]
-bars = ax.bar(year_comparison["year"], year_comparison["cnt"], color=colors)
+bars = ax.bar(year_comparison["year"], year_comparison["cnt"], color="#2E86AB")
 ax.set_xlabel("Tahun")
 ax.set_ylabel("Rata-rata Penyewaan per Jam")
 
@@ -217,6 +221,32 @@ for bar in bars:
     height = bar.get_height()
     ax.annotate(f'{height:.0f}', xy=(bar.get_x() + bar.get_width()/2, height),
                 xytext=(0, 3), textcoords="offset points", ha='center', va='bottom')
+st.pyplot(fig)
+
+st.markdown("---")
+
+# ============================================
+# CHART 7: ANALISIS MUSIMAN
+# ============================================
+st.subheader("Analisis Penyewaan per Musim")
+
+season_map = {1: 'Semi', 2: 'Panas', 3: 'Gugur', 4: 'Dingin'}
+filtered_day = filtered_day.copy()
+filtered_day['season_name'] = filtered_day['season'].map(season_map)
+
+season_rental = filtered_day.groupby('season_name', observed=True)['cnt'].mean().sort_values(ascending=False)
+
+fig, ax = plt.subplots(figsize=(10, 6))
+bars = ax.bar(season_rental.index, season_rental.values, color="#2E86AB", edgecolor='black')
+
+for bar in bars:
+    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 100, 
+            f'{int(bar.get_height())}', ha='center', va='bottom', fontsize=11, fontweight='bold')
+
+ax.set_title("Rata-rata Penyewaan per Musim", fontsize=14, fontweight='bold')
+ax.set_xlabel("Musim", fontsize=12)
+ax.set_ylabel("Rata-rata Penyewaan per Hari", fontsize=12)
+ax.grid(axis='y', linestyle='--', alpha=0.5)
 st.pyplot(fig)
 
 st.markdown("---")
