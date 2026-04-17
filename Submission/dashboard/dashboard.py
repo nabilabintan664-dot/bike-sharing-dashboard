@@ -2,61 +2,24 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import os
 
 st.set_page_config(page_title="Bike Sharing Dashboard", layout="wide")
 
 # ============================================
-# DEBUG: LIHAT DAFTAR FILE
-# ============================================
-st.write("### Debug: Cek File di Server")
-
-# Tampilkan current working directory
-st.write(f"Current directory: {os.getcwd()}")
-
-# Tampilkan semua file di folder saat ini
-st.write("Files in current directory:")
-st.write(os.listdir('.'))
-
-# Cek apakah main_data.csv ada
-if os.path.exists("main_data.csv"):
-    st.success("main_data.csv DITEMUKAN!")
-else:
-    st.error("main_data.csv TIDAK DITEMUKAN!")
-
-# Cek apakah ada folder data
-if os.path.exists("data"):
-    st.write("Files in data folder:")
-    st.write(os.listdir('data'))
-
-st.markdown("---")
-
-# ============================================
-# LOAD DATA (Coba beberapa path)
+# LOAD DATA (DENGAN PATH YANG BENAR)
 # ============================================
 @st.cache_data
 def load_data():
-    # Coba berbagai kemungkinan path
-    paths_to_try = ["main_data.csv", "../main_data.csv", "data/main_data.csv", "../data/main_data.csv"]
-    
-    for path in paths_to_try:
-        if os.path.exists(path):
-            st.success(f"Loading data from: {path}")
-            df = pd.read_csv(path)
-            df['dteday'] = pd.to_datetime(df['dteday'])
-            return df
-    
-    st.error("Tidak能找到 file main_data.csv di semua lokasi!")
-    st.stop()
+    # Path yang benar: file ada di Submission/dashboard/
+    df = pd.read_csv("Submission/dashboard/main_data.csv")
+    df['dteday'] = pd.to_datetime(df['dteday'])
+    return df
 
 df = load_data()
 
-# Pisahkan data
+# Pisahkan data berdasarkan data_type
 hour_df = df[df['data_type'] == 'hourly'].copy()
 day_df = df[df['data_type'] == 'daily'].copy()
-
-st.write(f"Data berhasil dimuat! Hourly: {len(hour_df)}, Daily: {len(day_df)}")
-st.markdown("---")
 
 # ============================================
 # SIDEBAR FILTER
